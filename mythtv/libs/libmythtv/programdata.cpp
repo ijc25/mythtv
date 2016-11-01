@@ -736,7 +736,7 @@ uint DBEvent::UpdateDB(
     for (; j != ratings.end(); ++j)
     {
         query.prepare(
-            "INSERT INTO programrating "
+            "INSERT IGNORE INTO programrating "
             "       ( chanid, starttime, system, rating) "
             "VALUES (:CHANID, :START,    :SYS,  :RATING)");
         query.bindValue(":CHANID", chanid);
@@ -1113,7 +1113,7 @@ uint ProgInfo::InsertDB(MSqlQuery &query, uint chanid) const
     for (; j != ratings.end(); ++j)
     {
         query.prepare(
-            "INSERT INTO programrating "
+            "INSERT IGNORE INTO programrating "
             "       ( chanid, starttime, system, rating) "
             "VALUES (:CHANID, :START,    :SYS,  :RATING)");
         query.bindValue(":CHANID", chanid);

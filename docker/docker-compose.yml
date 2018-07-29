@@ -14,10 +14,7 @@ services:
     #expose:
     #  - "3306"
   backend:
-    #build:
-    # dockerfile: Dockerfile.dev
-    # target: mythbackend
-    image: mythtvbackend:dev
+    image: mythtvbackend:compose-dev
     networks:
       - overlay
     ports:
@@ -33,7 +30,7 @@ services:
     environment:
       - MYTHTV_SETUP=1
   frontend:
-    image: mythtvfrontend:dev
+    image: mythtvfrontend:compose-dev
     networks:
       - overlay
     ports:

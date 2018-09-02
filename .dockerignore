@@ -1,1 +1,14 @@
-.git
+/.dockerignore
+compose-dev.build.log
+/docker/*.Dockerfile
+/.git
+*/config.ep
+*/config.h
+*/config.log
+**/.qmake.stash
+**/build/
+**/obj/
+**/moc/
+**/lib*.so*
+**/*.[aod]
+**/*.pyc

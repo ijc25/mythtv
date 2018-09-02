@@ -2,7 +2,7 @@ This Docker configuration is intended for _development_ of Docker. It is not int
 
 ## Usage
 
-First run `docker/compose-dev.build.sh` from the top level source directory.
+First run `./docker/build.sh` from the top level source directory.
 
 Your node needs to be in swarm mode. If it is not then `docker swarm init`.
 

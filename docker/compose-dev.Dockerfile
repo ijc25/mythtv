@@ -4,7 +4,7 @@ ARG RECONFIGURE=false
 ARG CONFIGURE_ARGS="--enable-libx264 \
         --enable-libxvid --enable-libfftw3 --enable-nonfree --enable-pic \
 	--extra-cxxflags="-fno-devirtualize" \
-	--enable-libmp3lame --enable-librtmp \
+	--enable-libmp3lame \
 	--disable-ffprobe --disable-ffserver --enable-opengl-video --enable-vaapi --enable-crystalhd"
 
 #RUN apt-get update && apt-get dist-upgrade -y
@@ -30,9 +30,16 @@ WORKDIR /src/mythtv
 RUN echo deb     http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
 RUN echo deb-src http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
 RUN apt-get update "-oAcquire::AllowInsecureRepositories=true" && apt-get install -y --allow-unauthenticated "-oAcquire::AllowInsecureRepositories=true" deb-multimedia-keyring
+# libxnvctrl and liblzo2-dev are newer deps
 # libqt5sql5-mysql needed at runtime
 # mysql-client is only needed for debug convenince
-RUN apt-get update && apt-get build-dep -y mythtv-dmo && apt-get install -y libqt5sql5-mysql mysql-client
+# Python and Perl deps
+RUN apt-get update \
+ && apt-get build-dep -y mythtv-dmo \
+ && apt-get install -y libxnvctrl-dev liblzo2-dev \
+ && apt-get install -y libqt5sql5-mysql mysql-client \
+ && apt-get install -y python-mysqldb python-lxml python-urlgrabber \
+ && apt-get install -y libhttp-message-perl libwww-perl libnet-upnp-perl libio-socket-inet6-perl libxml-simple-perl
 
 # Cache the baseline
 RUN ./configure ${CONFIGURE_ARGS}

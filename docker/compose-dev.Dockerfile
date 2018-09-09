@@ -1,11 +1,12 @@
 FROM debian:stretch AS build
 ARG MYTHTV_COMMIT=HEAD
 ARG RECONFIGURE=false
-ARG CONFIGURE_ARGS="--enable-libx264 \
+ARG MYTHTV_CONFIGURE_ARGS="--enable-libx264 \
         --enable-libxvid --enable-libfftw3 --enable-nonfree --enable-pic \
 	--extra-cxxflags="-fno-devirtualize" \
 	--enable-libmp3lame \
 	--disable-ffprobe --disable-ffserver --enable-opengl-video --enable-vaapi --enable-crystalhd"
+ARG MYTHPLUGINS_CONFIGURE_ARGS="--enable-all"
 
 #RUN apt-get update && apt-get dist-upgrade -y
 
@@ -22,10 +23,6 @@ RUN sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen && \
     update-locale
 ENV LANG=en_GB.UTF-8
 
-# Repository contains subdirectories `mythtv`, `mythplugins` etc, so clone as /src
-RUN mkdir /src && git clone https://github.com/MythTV/MythTV /src && git -C /src checkout ${MYTHTV_COMMIT}
-WORKDIR /src/mythtv
-
 # XXX TODO try with just Debian sources and inline the build-deps?
 RUN echo deb     http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
 RUN echo deb-src http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
@@ -41,9 +38,22 @@ RUN apt-get update \
  && apt-get install -y python-mysqldb python-lxml python-urlgrabber \
  && apt-get install -y libhttp-message-perl libwww-perl libnet-upnp-perl libio-socket-inet6-perl libxml-simple-perl
 
+# Repository contains subdirectories `mythtv`, `mythplugins` etc, so clone as /src
+RUN mkdir /src \
+ && git clone https://github.com/MythTV/MythTV /src \
+ && git -C /src checkout ${MYTHTV_COMMIT}
+
 # Cache the baseline
-RUN ./configure ${CONFIGURE_ARGS}
-RUN make -j$(getconf _NPROCESSORS_ONLN)
+WORKDIR /src/mythtv
+RUN ./configure ${MYTHTV_CONFIGURE_ARGS} \
+ && make -j$(getconf _NPROCESSORS_ONLN) \
+ && make -j$(getconf _NPROCESSORS_ONLN) install \
+ && /sbin/ldconfig
+WORKDIR /src/mythplugins
+RUN ./configure ${MYTHPLUGINS_CONFIGURE_ARGS} \
+ && make -j$(getconf _NPROCESSORS_ONLN) \
+ && make -j$(getconf _NPROCESSORS_ONLN) install \
+ && /sbin/ldconfig
 
 # The above is a fresh build of ${MYTHTV_COMMIT} which should be
 # cacheable. Now add local mods and rebuild (hopefully) just what
@@ -53,15 +63,17 @@ ADD mythtv/ /src/mythtv/
 ADD mythplugins/ /src/mythplugins/
 
 # Only reconfigure if requested to preserve caching
-RUN if [ "${RECONFIGURE}" = "true" ] ; then ./configure ${CONFIGURE_ARGS} ; fi
-RUN make -j$(getconf _NPROCESSORS_ONLN)
-
-RUN make install -j$(getconf _NPROCESSORS_ONLN) && /sbin/ldconfig
+WORKDIR /src/mythtv
+RUN if [ "${RECONFIGURE}" = "true" ] ; then ./configure ${MYTHTV_CONFIGURE_ARGS} ; fi \
+ && make -j$(getconf _NPROCESSORS_ONLN) \
+ && make install -j$(getconf _NPROCESSORS_ONLN) \
+ && /sbin/ldconfig
 
 WORKDIR /src/mythplugins
-RUN ./configure --enable-all
-RUN make -j$(getconf _NPROCESSORS_ONLN)
-RUN make install -j$(getconf _NPROCESSORS_ONLN) && /sbin/ldconfig
+RUN if [ "${RECONFIGURE}" = "true" ] ; then ./configure  ${MYTHPLUGINS_CONFIGURE_ARGS} ; fi \
+ && make -j$(getconf _NPROCESSORS_ONLN) \
+ && make install -j$(getconf _NPROCESSORS_ONLN) \
+ && /sbin/ldconfig
 
 RUN useradd --system --create-home --home-dir /var/lib/mythtv mythtv
 USER mythtv

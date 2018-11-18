@@ -1,4 +1,4 @@
-FROM debian:stretch AS build
+FROM debian:stretch AS build-env
 ARG MYTHTV_COMMIT=HEAD
 ARG RECONFIGURE=false
 ARG MYTHTV_CONFIGURE_ARGS="--enable-libx264 \
@@ -38,6 +38,12 @@ RUN apt-get update \
  && apt-get install -y python-mysqldb python-lxml python-urlgrabber \
  && apt-get install -y libhttp-message-perl libwww-perl libnet-upnp-perl libio-socket-inet6-perl libxml-simple-perl
 
+RUN echo "cd /src/mythtv && ./configure ${MYTHTV_CONFIGURE_ARGS}" > /usr/local/bin/configure-mythtv && \
+    echo "cd /src/mythplugins && ./configure ${MYTHPLUGINS_CONFIGURE_ARGS} " > /usr/local/bin/configure-mythplugins && \
+    chmod +x /usr/local/bin/configure-mythtv /usr/local/bin/configure-mythplugins
+
+FROM build-env AS build
+
 # Repository contains subdirectories `mythtv`, `mythplugins` etc, so clone as /src
 RUN mkdir /src \
  && git clone https://github.com/MythTV/MythTV /src \
@@ -45,12 +51,12 @@ RUN mkdir /src \
 
 # Cache the baseline
 WORKDIR /src/mythtv
-RUN ./configure ${MYTHTV_CONFIGURE_ARGS} \
+RUN configure-mythtv \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make -j$(getconf _NPROCESSORS_ONLN) install \
  && /sbin/ldconfig
 WORKDIR /src/mythplugins
-RUN ./configure ${MYTHPLUGINS_CONFIGURE_ARGS} \
+RUN configure-mythplugins \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make -j$(getconf _NPROCESSORS_ONLN) install \
  && /sbin/ldconfig
@@ -64,13 +70,13 @@ ADD mythplugins/ /src/mythplugins/
 
 # Only reconfigure if requested to preserve caching
 WORKDIR /src/mythtv
-RUN if [ "${RECONFIGURE}" = "true" ] ; then ./configure ${MYTHTV_CONFIGURE_ARGS} ; fi \
+RUN if [ "${RECONFIGURE}" = "true" ] ; then configure-mythtv ; fi \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make install -j$(getconf _NPROCESSORS_ONLN) \
  && /sbin/ldconfig
 
 WORKDIR /src/mythplugins
-RUN if [ "${RECONFIGURE}" = "true" ] ; then ./configure  ${MYTHPLUGINS_CONFIGURE_ARGS} ; fi \
+RUN if [ "${RECONFIGURE}" = "true" ] ; then configure-mythplugins ; fi \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make install -j$(getconf _NPROCESSORS_ONLN) \
  && /sbin/ldconfig

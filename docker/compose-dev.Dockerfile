@@ -70,13 +70,15 @@ ADD mythplugins/ /src/mythplugins/
 
 # Only reconfigure if requested to preserve caching
 WORKDIR /src/mythtv
-RUN if [ "${RECONFIGURE}" = "true" ] ; then configure-mythtv ; fi \
+RUN git diff --name-only --relative ${MYTHTV_COMMIT} | tee /dev/stderr | xargs --no-run-if-empty touch \
+ && if [ "${RECONFIGURE}" = "true" ] ; then configure-mythtv ; fi \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make install -j$(getconf _NPROCESSORS_ONLN) \
  && /sbin/ldconfig
 
 WORKDIR /src/mythplugins
-RUN if [ "${RECONFIGURE}" = "true" ] ; then configure-mythplugins ; fi \
+RUN git diff --name-only --relative ${MYTHTV_COMMIT} | tee /dev/stderr | xargs --no-run-if-empty touch \
+ && if [ "${RECONFIGURE}" = "true" ] ; then configure-mythplugins ; fi \
  && make -j$(getconf _NPROCESSORS_ONLN) \
  && make install -j$(getconf _NPROCESSORS_ONLN) \
  && /sbin/ldconfig

@@ -1,11 +1,11 @@
-FROM debian:stretch AS build-env
+FROM debian:buster AS build-env
 ARG MYTHTV_COMMIT=HEAD
 ARG RECONFIGURE=false
 ARG MYTHTV_CONFIGURE_ARGS="--enable-libx264 \
         --enable-libxvid --enable-libfftw3 --enable-nonfree --enable-pic \
 	--extra-cxxflags="-fno-devirtualize" \
 	--enable-libmp3lame \
-	--disable-ffprobe --disable-ffserver --enable-opengl-video --enable-vaapi --enable-crystalhd"
+	--disable-ffprobe --disable-ffserver --enable-opengl-video --enable-vaapi --disable-crystalhd --disable-xnvctrl"
 ARG MYTHPLUGINS_CONFIGURE_ARGS="--enable-all"
 
 #RUN apt-get update && apt-get dist-upgrade -y
@@ -24,8 +24,8 @@ RUN sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG=en_GB.UTF-8
 
 # XXX TODO try with just Debian sources and inline the build-deps?
-RUN echo deb     http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
-RUN echo deb-src http://mirror/debian-multimedia/ stretch main >> /etc/apt/sources.list
+RUN echo deb     http://mirror/debian-multimedia/ buster main >> /etc/apt/sources.list
+RUN echo deb-src http://mirror/debian-multimedia/ buster main >> /etc/apt/sources.list
 RUN apt-get update "-oAcquire::AllowInsecureRepositories=true" && apt-get install -y --allow-unauthenticated "-oAcquire::AllowInsecureRepositories=true" deb-multimedia-keyring
 # libxnvctrl and liblzo2-dev are newer deps
 # libqt5sql5-mysql needed at runtime
@@ -34,7 +34,7 @@ RUN apt-get update "-oAcquire::AllowInsecureRepositories=true" && apt-get instal
 RUN apt-get update \
  && apt-get build-dep -y mythtv-dmo \
  && apt-get install -y libxnvctrl-dev liblzo2-dev \
- && apt-get install -y libqt5sql5-mysql mysql-client \
+ && apt-get install -y libqt5sql5-mysql mariadb-client \
  && apt-get install -y python-mysqldb python-lxml python-urlgrabber \
  && apt-get install -y libhttp-message-perl libwww-perl libnet-upnp-perl libio-socket-inet6-perl libxml-simple-perl
 

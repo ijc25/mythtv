@@ -4,6 +4,7 @@ set -e -x
 #: ${MYTHTV_COMMIT:=$(git rev-parse ${MYTHTV_REF})}
 : ${MYTHTV_COMMIT:=$(git merge-base ${MYTHTV_REF} origin/master)}
 
+export DOCKER_BUILDKIT=1
 PROGRESS=--progress=plain
 #FORCE_RM= --force-rm
 #RECONFIGURE=--build-arg=RECONFIGURE=true

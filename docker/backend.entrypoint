@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [ -n "$MYTHTV_SETUP" ] ; then
+   startx /usr/local/bin/mythtv-setup -- /usr/bin/Xtigervnc :0 PasswordFile=/var/lib/mythtv/.vnc/passwd
+fi
+exec /usr/local/bin/mythbackend -v all

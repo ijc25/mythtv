@@ -1,0 +1,53 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - mythtv-db:/var/lib/mysql
+    networks:
+      - overlay
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mythconverg
+      - MYSQL_USER=mythtv
+      - MYSQL_PASSWORD=mythtv
+    #expose:
+    #  - "3306"
+  backend:
+    image: mythtvbackend:compose-dev
+    networks:
+      - overlay
+    ports:
+      - "5901:5900"
+      - "6543:6543"
+      - "6544:6544"
+      - "6549:6549"
+    volumes:
+      - mythtv-backend:/var/lib/mythtv
+      - mythtv-recordings:/recordings:ro
+      - mythtv-music:/music:ro
+    # For setup
+    environment:
+      - MYTHTV_SETUP=1
+  frontend:
+    image: mythtvfrontend:compose-dev
+    networks:
+      - overlay
+    ports:
+      - "5900:5900" # VNC
+    volumes
+      - mythtv-frontend:/var/lib/mythtv
+volumes:
+  mythtv-db:
+    external: true
+  mythtv-music:
+    external: true
+  mythtv-recordings:
+    external: true
+  mythtv-frontend:
+    external: true
+  mythtv-backend:
+    external: true
+
+networks:
+  overlay:

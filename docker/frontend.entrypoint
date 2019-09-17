@@ -1,0 +1,2 @@
+#!/bin/sh
+exec startx /usr/local/bin/mythfrontend -- /usr/bin/Xtigervnc :0 PasswordFile=/var/lib/mythtv/.vnc/passwd

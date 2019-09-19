@@ -121,6 +121,7 @@ class MTV_PUBLIC  HLSReader
     uint       m_prebuffer_cnt;
     QMutex     m_seq_lock;
     mutable QMutex m_stream_lock;
+    mutable QMutex m_worker_lock;
     QMutex     m_throttle_lock;
     QWaitCondition  m_throttle_cond;
     bool       m_debug;

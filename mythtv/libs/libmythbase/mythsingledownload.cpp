@@ -12,7 +12,7 @@
 #define LOC QString("MythSingleDownload: ")
 
 bool MythSingleDownload::DownloadURL(const QUrl &url, QByteArray *buffer,
-                                     uint timeout, uint redirs, qint64 maxsize)
+                                     uint timeout, uint redirs, qint64 maxsize, QString *final_url)
 {
     m_lock.lock();
 
@@ -78,8 +78,12 @@ bool MythSingleDownload::DownloadURL(const QUrl &url, QByteArray *buffer,
                 LOG(VB_GENERAL, LOG_INFO, QString("%1 -> %2").arg(url.toString()).arg(redir));
                 m_replylock.unlock();
                 m_lock.unlock();
-                return DownloadURL(redir, buffer, timeout, redirs + 1);
+                return DownloadURL(redir, buffer, timeout, redirs + 1, maxsize, final_url);
             }
+        }
+        else if (final_url != nullptr)
+        {
+            *final_url = url.toString();
         }
 
         if (m_errorcode == QNetworkReply::NoError)

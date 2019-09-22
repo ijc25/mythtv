@@ -5,9 +5,9 @@
 #include "HLSReader.h"
 #include "HLSStream.h"
 
-#define LOC QString("%1 stream: ").arg(m_url)
+#define LOC QString("%1 stream: ").arg(m_m3u8_url)
 
-HLSRecStream::HLSRecStream(int seq, uint64_t bitrate, const QString& url)
+HLSRecStream::HLSRecStream(int seq, uint64_t bitrate, const QString& m3u8_url)
     : m_id(seq),
       m_version(1),
       m_targetduration(-1),
@@ -17,7 +17,7 @@ HLSRecStream::HLSRecStream(int seq, uint64_t bitrate, const QString& url)
       m_live(true),
       m_bandwidth(0),
       m_sumbandwidth(0.0),
-      m_url(url),
+      m_m3u8_url(m3u8_url),
       m_cache(false),
       m_retries(0)
 {

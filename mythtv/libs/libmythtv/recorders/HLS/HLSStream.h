@@ -22,7 +22,7 @@ class HLSRecStream
     typedef QMap<QString, AES_KEY* >  AESKeyMap;
 #endif
 
-    HLSRecStream(int seq, uint64_t bitrate, const QString& uri);
+    HLSRecStream(int seq, uint64_t bitrate, const QString& m_m3u8_uri);
     ~HLSRecStream(void);
 
     int Read(uint8_t* buffer, int len);
@@ -42,7 +42,7 @@ class HLSRecStream
     void SetCache(bool x)           { m_cache = x; }
     bool Live(void) const           { return m_live; }
     void SetLive(bool x)            { m_live = x; }
-    QString Url(void) const         { return m_url; }
+    QString M3U8Url(void) const     { return m_m3u8_url; }
 
     uint Duration(void) const;
     uint NumCachedSegments(void) const;
@@ -86,7 +86,7 @@ class HLSRecStream
     double      m_sumbandwidth;
     QQueue<int64_t> m_bandwidth_segs;
 
-    QString     m_url;             // uri to m3u8
+    QString     m_m3u8_url;        // uri to m3u8
     mutable QMutex  m_lock;
     bool        m_cache;           // allow caching
     int         m_retries;
